@@ -622,34 +622,38 @@ function getDaysUntilReset() {
 function updateUI() {
     const state = getState();
     const spinBtn = document.getElementById('spinBtn');
+    const spinBtnDesktop = document.getElementById('spinBtnDesktop');
+    const buttons = [spinBtn, spinBtnDesktop].filter(btn => btn !== null);
     
-    // Удаляем старый badge если есть
-    const oldBadge = spinBtn.querySelector('.attempts-badge');
-    if (oldBadge) {
-        oldBadge.remove();
-    }
-    
-    if (state.attemptsLeft > 0) {
-        spinBtn.disabled = false;
-        
-        // Новая логика отображения текста кнопки
-        if (!state.hasSpun) {
-            // Если еще не было ни одного спина
-            spinBtn.textContent = 'Испытаем удачу?';
-        } else if (state.attemptsLeft === 1) {
-            // Осталась последняя попытка
-            spinBtn.textContent = 'Осталась последняя попытка';
-        } else if (state.attemptsLeft === 2) {
-            // Осталось 2 попытки
-            spinBtn.textContent = 'Осталось 2 попытки';
-        } else {
-            // Осталось 3 или больше попыток (это возможно только если были реванши)
-            spinBtn.innerHTML = `Крутить колесо<span class="attempts-badge">${state.attemptsLeft}</span>`;
+    buttons.forEach(btn => {
+        // Удаляем старый badge если есть
+        const oldBadge = btn.querySelector('.attempts-badge');
+        if (oldBadge) {
+            oldBadge.remove();
         }
-    } else {
-        spinBtn.disabled = true;
-        spinBtn.textContent = 'Попытки закончились';
-    }
+        
+        if (state.attemptsLeft > 0) {
+            btn.disabled = false;
+            
+            // Новая логика отображения текста кнопки
+            if (!state.hasSpun) {
+                // Если еще не было ни одного спина
+                btn.textContent = 'Испытаем удачу?';
+            } else if (state.attemptsLeft === 1) {
+                // Осталась последняя попытка
+                btn.textContent = 'Осталась последняя попытка';
+            } else if (state.attemptsLeft === 2) {
+                // Осталось 2 попытки
+                btn.textContent = 'Осталось 2 попытки';
+            } else {
+                // Осталось 3 или больше попыток (это возможно только если были реванши)
+                btn.innerHTML = `Крутить колесо<span class="attempts-badge">${state.attemptsLeft}</span>`;
+            }
+        } else {
+            btn.disabled = true;
+            btn.textContent = 'Попытки закончились';
+        }
+    });
     
     // Если уже крутили, разблокируем кнопки
     if (state.hasSpun) {
@@ -714,7 +718,15 @@ window.resetAttemps = resetAttempts;
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    document.getElementById('spinBtn').addEventListener('click', spinWheel);
+    // Добавляем обработчик для обеих кнопок (мобильная и десктопная)
+    const spinBtn = document.getElementById('spinBtn');
+    const spinBtnDesktop = document.getElementById('spinBtnDesktop');
+    if (spinBtn) {
+        spinBtn.addEventListener('click', spinWheel);
+    }
+    if (spinBtnDesktop) {
+        spinBtnDesktop.addEventListener('click', spinWheel);
+    }
     
     document.getElementById('submitResults').addEventListener('click', () => {
         const state = getState();
