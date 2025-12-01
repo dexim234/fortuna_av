@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApeVault FortunaX</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Telegram WebApp SDK для мини-приложения -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- Crypto Decoration Background -->
+    <div class="crypto-decoration">
+        <div class="crypto-coin coin-1"></div>
+        <div class="crypto-coin coin-2"></div>
+        <div class="crypto-coin coin-3"></div>
+        <div class="crypto-coin coin-4"></div>
+        <div class="crypto-coin coin-5"></div>
+        <div class="crypto-coin coin-6"></div>
+    </div>
+    <main class="main-container">
+        <!-- Header Section -->
+        <header class="header-section">
+            <h1 class="main-title">ApeVault FortunaX</h1>
+            <p class="subtitle">Крути колесо и получай скидки, бонусы и доступ к материалам</p>
+        </header>
+
+        <!-- Wheel Section -->
+        <section class="wheel-section">
+            <div class="wheel-container">
+                <!-- Left: Wheel -->
+                <div class="wheel-wrapper">
+                    <div class="wheel-arrow"></div>
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                </div>
+
+                <!-- Right: Results -->
+                <div class="results-container">
+                    <div class="result-display" id="resultDisplay">
+                        <p class="result-text"></p>
+                    </div>
+                    
+                    <div class="download-buttons">
+                        <button class="download-btn locked" id="downloadGuide" disabled>
+                            <i class="fas fa-lock"></i>
+                            <span>Гайд по алертам</span>
+                        </button>
+                        <button class="download-btn locked" id="downloadGlossary" disabled>
+                            <i class="fas fa-lock"></i>
+                            <span>Крипто-глоссарий</span>
+                        </button>
+                    </div>
+
+                    <button class="submit-btn" id="submitResults">Скинуть результаты</button>
+                </div>
+            </div>
+
+            <!-- Spin Button -->
+            <div class="spin-section">
+                <button class="spin-btn" id="spinBtn">Крутить колесо</button>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="faq-section">
+            <div class="faq-container">
+                <h2 class="faq-title">FAQ</h2>
+                <p class="faq-subtitle">Отвечаем на самые популярные вопросы о колесе фортуны</p>
+
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Сколько есть попыток?</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>3 попытки</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Как часто обновляются попытки?</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Каждые 30 дней</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Обновляются ли призы?</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Да, призовой пул и шансы обновляются регулярно. Как правило — раз в две недели, а в редких случаях — до одного раза в 90 дней.</p>
+                        </div>
+                    </div>
+
+                          <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Кому писать, чтоб получить приз?</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Сделайте скриншот, нажмите „скинуть результаты“, в боте выберите раздел „Fortuna AV“. Потом просто следуйте шагам»</p>
+                        </div>
+                    </div>
+
+
+                        <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Как понимать эти ваши "мягкая удача" и "полцарства"?</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>10% скидка — Мягкая Удача</p>
+<p>20% скидка — Удачный Поворот</p>
+<p>30% скидка — Золотая Тридцатка</p>
+<p>40% скидка — Почти Джекпот</p>
+<p>50% скидка — Полцарства</p>
+                        </div>
+                    </div>
+
+                           <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Что за +30 дней к пути? </span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Бонус продлевает ваш доступ на 30 дней - к продукту или обучению, но не активирует его, если доступа не было</p>
+                        </div>
+                    </div>
+
+                               <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Что за реванш? </span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Госпожа Удача сама открывает вам доступ к ещё одному ходу — и кто знает, может именно он станет тем самым жирным выигрышем. Вперёд!</p>
+                        </div>
+                    </div>
+
+                                <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Сохраняется ли моя скидка навсегда или у неё есть срок действия? </span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Скидка — разовый бонус. Но через 30 дней вы можете снова испытать удачу: колесо может подарить продление или выбросить ещё более сочный процент. Так что шанс усилить выгоду всегда остаётся ;)</p>
+                        </div>
+                    </div>
+
+                               <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Каждый приз даёт ровно одну активацию? </span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Да, именно так</p>
+                        </div>
+                    </div>
+
+                                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>У меня новые попытки - что делать, если выпал тот же приз, что и раньше? </span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Если приз вам подходит, отправьте результаты — мы активируем его, если всё в рамках Оферты. Если нет — ждём вместе с вами новых призов и новых возможностей! </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: No Attempts Left -->
+    <div class="modal-overlay" id="noAttemptsModal">
+        <div class="modal-container">
+            <button class="modal-close" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-content">
+                <div class="modal-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h2 class="modal-title">Попытки закончились</h2>
+                <p class="modal-text">
+                    Вы использовали все доступные попытки. Новые попытки станут доступны через <span class="modal-days" id="modalDaysLeft">30</span> дней.
+                </p>
+                <p class="modal-text-secondary">
+                    Следите за обновлениями и не упустите шанс выиграть призы!
+                </p>
+            </div>
+        </div>
+    </div>
+
+<!-- START footer -->
+<footer id="site-footer" style="background:#0A0A0A; color:#ddd; padding:40px 20px; font-family:Inter, Arial, sans-serif;">
+
+  <div class="footer-inner" style="max-width:1200px; margin:0 auto; display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start; justify-content:space-between;">
+
+
+
+    <!-- Left: logo/description/contact -->
+
+<div class="footer-col footer-brand" style="min-width:260px; flex:1 1 260px;">
+
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+
+    <!-- логотип вместо иконки -->
+
+    <img src="croc.png" alt="ApeVault Logo" width="44" height="44" style="object-fit:contain;">
+
+    <div>
+
+      <div style="font-weight:700; color:#fff; font-size:18px;">ApeVault</div>
+
+      <div style="font-size:12px; color:#aaa;">сообщество диких криптанов</div>
+
+    </div>
+
+  </div>
+
+
+
+  <p style="color:#bbb; line-height:1.6; margin:0 0 18px 0; font-size:14px;">
+
+    Поддержка пользователей, обучающие курсы и инструменты для безопасной работы с криптой.
+
+  </p>
+
+
+
+  <div class="footer-contacts" style="margin-top:6px;">
+
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#4E6E49" aria-hidden="true"><path d="M21 8V7l-3 2-2-1-7 7 1 2 2 1 3-3h5V8z"></path></svg>
+
+      <a href="mailto:hello@apevault.example" style="color:#4E6E49; text-decoration:none;">hello@apevault.example</a>
+
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#4E6E49" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 01.94-.27 11.36 11.36 0 003.6.57 1 1 0 011 1v3.5a1 1 0 01-1 1A17 17 0 013 5a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.6 1 1 0 01-.27.94l-2.18 2.25z"></path></svg>
+
+      <a href="tel:+1234567890" style="color:#4E6E49; text-decoration:none;">+1 (234) 567‑890</a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+    <!-- Middle: links / downloads -->
+
+    <div class="footer-col footer-links" style="min-width:260px; flex:1 1 260px;">
+
+      <div style="display:flex; gap:24px; flex-wrap:wrap;">
+
+        <div style="min-width:140px;">
+
+          <h4 style="color:#fff; font-size:14px; margin:0 0 10px 0;">Документы</h4>
+
+          <ul style="list-style:none; padding:0; margin:0; color:#bbb; font-size:14px;">
+
+            <li style="margin-bottom:8px;">
+
+              <a class="download-link" href="files/policy.pdf" download aria-label="Скачать Политику обработки персональных данных" style="color:#4E6E49; text-decoration:none; display:inline-flex; gap:8px; align-items:center;">
+
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#4E6E49" aria-hidden="true"><path d="M12 16l4-5h-3V4h-2v7H8l4 5z"/><path d="M5 20h14v2H5z"/></svg>
+
+                Политика обработки персональных данных
+
+              </a>
+
+            </li>
+
+            <li style="margin-bottom:8px;">
+
+              <a class="download-link" href="files/offer.pdf" download aria-label="Скачать публичную оферту" style="color:#4E6E49; text-decoration:none; display:inline-flex; gap:8px; align-items:center;">
+
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#4E6E49" aria-hidden="true"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5z"/><path d="M8 9h8v2H8V9z"/></svg>
+
+                Публичная оферта
+
+              </a>
+
+            </li>
+
+            <li>
+
+              <a class="download-link" href="files/services.pdf" download aria-label="Скачать информацию о сервисах" style="color:#4E6E49; text-decoration:none; display:inline-flex; gap:8px; align-items:center;">
+
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#4E6E49" aria-hidden="true"><path d="M4 6h16v2H4zM4 10h16v2H4zM4 14h16v2H4z"/></svg>
+
+                Информация о сервисах
+
+              </a>
+
+            </li>
+
+          </ul>
+
+        </div>
+
+
+
+        <div style="min-width:180px;">
+
+          <h4 style="color:#fff; font-size:14px; margin:0 0 10px 0;">Реквизиты</h4>
+
+          <div style="color:#bbb; font-size:14px; line-height:1.6;">
+
+            ИП Соболева Ксения Витальевна<br>
+
+            ИНН: <span style="color:#fff;">644110963363</span><br>
+
+            ОГРН: <span style="color:#fff;">322645700054948</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+<!-- Right: social icons -->
+
+<div class="footer-col footer-social" style="min-width:220px; flex:1 1 220px; display:flex; flex-direction:column; gap:14px; align-items:flex-end; margin-top:20px;">
+
+  <div style="display:flex; gap:12px; align-items:center; justify-content:flex-end;">
+
+
+
+    <!-- VK -->
+
+    <a href="https://vk.com/yourpage" target="_blank" rel="noopener" aria-label="ВКонтакте" style="color:inherit; text-decoration:none; display:flex; align-items:center;">
+
+      <i class="fa-brands fa-vk" style="font-size:36px; color:#ddd;"></i>
+
+    </a>
+
+
+
+    <!-- Telegram -->
+
+    <a href="https://t.me/yourchannel" target="_blank" rel="noopener" aria-label="Telegram" style="color:inherit; text-decoration:none; display:flex; align-items:center;">
+
+      <i class="fa-brands fa-telegram" style="font-size:36px; color:#ddd;"></i>
+
+    </a>
+
+
+
+    <!-- YouTube -->
+
+    <a href="https://youtube.com/yourchannel" target="_blank" rel="noopener" aria-label="YouTube" style="color:inherit; text-decoration:none; display:flex; align-items:center;">
+
+      <i class="fa-brands fa-youtube" style="font-size:36px; color:#ddd;"></i>
+
+    </a>
+
+
+
+    <!-- RuTube -->
+
+    <a href="https://rutube.ru/yourchannel" target="_blank" rel="noopener" aria-label="RuTube" style="color:inherit; text-decoration:none; display:flex; align-items:center;">
+
+      <i class="fa-solid fa-play" style="font-size:36px; color:#ddd;"></i>
+
+    </a>
+
+
+
+    <!-- Instagram -->
+
+    <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener" aria-label="Instagram" style="color:inherit; text-decoration:none; display:flex; align-items:center;">
+
+      <i class="fa-brands fa-instagram" style="font-size:36px; color:#ddd;"></i>
+
+    </a>
+
+
+
+  </div>
+
+
+
+  <!-- Instagram note / warning -->
+
+  <span style="font-size:11px; color:#fff; background:#b33; padding:4px 6px; border-radius:8px; white-space:nowrap; margin-top:10px;">
+
+     Instagram (Meta) признана экстремистской и запрещённой в РФ
+
+  </span>
+
+</div>
+
+
+
+
+
+  <!-- Bottom legal row -->
+
+  <div style="max-width:1200px; margin:28px auto 0; border-top:1px solid rgba(255,255,255,0.04); padding-top:20px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px;">
+
+    <div style="color:#aaa; font-size:13px;">
+
+      <strong>ИП:</strong> Соболева Ксения Витальевна &nbsp;•&nbsp; <strong>ИНН:</strong> 644110963363 &nbsp;•&nbsp; <strong>ОГРН:</strong> 322645700054948
+
+    </div>
+
+    <div style="display:flex; gap:14px; align-items:center;">
+
+      <a href="files/policy.pdf" download style="color:#4E6E49; font-size:13px; text-decoration:none; border:1px solid rgba(78,110,73,0.3); padding:8px 10px; border-radius:8px;">Политика обработки персональных данных</a>
+
+      <a href="files/offer.pdf" download style="color:#4E6E49; font-size:13px; text-decoration:none; border:1px solid rgba(78,110,73,0.3); padding:8px 10px; border-radius:8px;">Публичная оферта</a>
+
+      <a href="files/services.pdf" download style="color:#4E6E49; font-size:13px; text-decoration:none; border:1px solid rgba(78,110,73,0.3); padding:8px 10px; border-radius:8px;">Информация о сервисах</a>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+
+<script src="script.js"></script>
+<script>
+  // footer small interactivity - выполняется после загрузки DOM
+  document.addEventListener('DOMContentLoaded', function() {
+    const footerYear = document.getElementById('footer-year');
+    if (footerYear) {
+      footerYear.textContent = new Date().getFullYear();
+    }
+
+    // add small click hooks for downloads (analytics or confirmations)
+    document.querySelectorAll('.download-link, a[download]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        // example: log to console, replace with analytics push if needed
+        console.log('Download clicked:', a.getAttribute('href'));
+        // optional: could show a toast or confirmation
+      });
+    });
+
+    // simple hover scale for social icons
+    document.querySelectorAll('.footer-col a i').forEach(icon=>{
+      icon.parentElement.addEventListener('mouseenter', ()=> icon.style.transform = 'scale(1.05)');
+      icon.parentElement.addEventListener('mouseleave', ()=> icon.style.transform = '');
+    });
+  });
+</script>
+
+<!-- END footer -->
+</body>
+</html>
+
