@@ -848,9 +848,9 @@ function setupPermissionModal() {
         requestWriteAccess();
     });
     
-    // Обработка кнопки "Позже"
+    // Обработка кнопки "Запретить"
     skipBtn.addEventListener('click', () => {
-        closePermissionModal();
+        denyPermission();
     });
     
     // Предотвращаем закрытие по клику на overlay
@@ -863,12 +863,7 @@ function setupPermissionModal() {
         }
     });
     
-    // Разрешаем закрытие по Escape для удобства пользователя
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && permissionModal.classList.contains('active')) {
-            closePermissionModal();
-        }
-    });
+    // Не разрешаем закрытие по Escape - пользователь должен сделать выбор
 }
 
 // Проверка и показ запроса разрешения
@@ -889,9 +884,18 @@ function checkAndRequestPermission() {
         return;
     }
     
-    // Если разрешение уже было запрошено, не показываем модальное окно снова
+    // Если разрешение уже было запрошено и разрешено, не показываем модальное окно снова
     if (permissionAsked === 'true') {
-        return;
+        const accessStatus = localStorage.getItem('telegram_write_access');
+        // Если разрешение было запрещено (denied), удаляем флаги чтобы снова спросить при следующем запуске
+        if (accessStatus === 'denied') {
+            // Не показываем окно, если было запрещено - пользователь уже решил
+            return;
+        } else if (accessStatus === 'granted') {
+            // Если разрешение уже дано, не показываем окно
+            return;
+        }
+        // Если статус неопределен, показываем окно снова
     }
     
     // Показываем модальное окно запроса разрешения
@@ -919,39 +923,163 @@ function closePermissionModal() {
 function requestWriteAccess() {
     if (!window.Telegram || !window.Telegram.WebApp) {
         console.error('Telegram WebApp не доступен');
-        closePermissionModal();
+        showPermissionError('Telegram WebApp не доступен');
         return;
     }
     
     const webApp = window.Telegram.WebApp;
+    const grantBtn = document.getElementById('grantPermissionBtn');
+    
+    // Показываем состояние загрузки
+    if (grantBtn) {
+        grantBtn.disabled = true;
+        grantBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Запрос...';
+    }
     
     // Запрашиваем разрешение
-    webApp.requestWriteAccess()
-        .then((granted) => {
-            if (granted) {
-                localStorage.setItem('telegram_write_access', 'granted');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-                console.log('Разрешение на отправку сообщений получено');
-                
-                // Обновляем UI модального окна с сообщением об успехе
-                updatePermissionModalSuccess();
-                
-                // Закрываем модальное окно через 1.5 секунды
-                setTimeout(() => {
-                    closePermissionModal();
-                }, 1500);
-            } else {
-                localStorage.setItem('telegram_write_access', 'denied');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-                console.log('Разрешение на отправку сообщений отклонено');
-                closePermissionModal();
-            }
-        })
-        .catch((error) => {
-            console.error('Ошибка при запросе разрешения:', error);
+    console.log('Запрос разрешения на отправку сообщений...');
+    
+    // Проверяем, доступен ли метод
+    if (typeof webApp.requestWriteAccess !== 'function') {
+        console.error('Метод requestWriteAccess не доступен');
+        showPermissionError('Функция запроса разрешения недоступна. Пожалуйста, обновите Telegram.');
+        if (grantBtn) {
+            grantBtn.disabled = false;
+            grantBtn.innerHTML = 'Разрешить';
+        }
+        return;
+    }
+    
+    try {
+        const requestPromise = webApp.requestWriteAccess();
+        
+        // Проверяем, является ли результат Promise
+        if (requestPromise && typeof requestPromise.then === 'function') {
+            requestPromise
+                .then((granted) => {
+                    console.log('Результат запроса разрешения:', granted);
+                    
+                    if (granted) {
+                        localStorage.setItem('telegram_write_access', 'granted');
+                        localStorage.setItem('telegram_write_access_asked', 'true');
+                        console.log('✅ Разрешение на отправку сообщений получено');
+                        
+                        // Проверяем статус разрешения
+                        if (webApp.canSendMessage) {
+                            console.log('✅ canSendMessage подтверждено');
+                        }
+                        
+                        // Обновляем UI модального окна с сообщением об успехе
+                        updatePermissionModalSuccess();
+                        
+                        // Закрываем модальное окно через 1.5 секунды
+                        setTimeout(() => {
+                            closePermissionModal();
+                        }, 1500);
+                    } else {
+                        localStorage.setItem('telegram_write_access', 'denied');
+                        localStorage.setItem('telegram_write_access_asked', 'true');
+                        console.log('❌ Разрешение на отправку сообщений отклонено');
+                        showPermissionError('Разрешение не было предоставлено');
+                        
+                        if (grantBtn) {
+                            grantBtn.disabled = false;
+                            grantBtn.innerHTML = 'Разрешить';
+                        }
+                        
+                        setTimeout(() => {
+                            closePermissionModal();
+                        }, 2000);
+                    }
+                })
+                .catch((error) => {
+                    console.error('❌ Ошибка при запросе разрешения:', error);
+                    showPermissionError('Ошибка при запросе разрешения: ' + error.message);
+                    
+                    if (grantBtn) {
+                        grantBtn.disabled = false;
+                        grantBtn.innerHTML = 'Разрешить';
+                    }
+                    
+                    setTimeout(() => {
+                        closePermissionModal();
+                    }, 2000);
+                });
+        } else {
+            // Если метод не возвращает Promise, обрабатываем синхронно
+            console.warn('requestWriteAccess не возвращает Promise, обрабатываем синхронно');
+            localStorage.setItem('telegram_write_access', 'granted');
             localStorage.setItem('telegram_write_access_asked', 'true');
-            closePermissionModal();
-        });
+            updatePermissionModalSuccess();
+            setTimeout(() => {
+                closePermissionModal();
+            }, 1500);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка при вызове requestWriteAccess:', error);
+        showPermissionError('Ошибка при вызове API: ' + error.message);
+        
+        if (grantBtn) {
+            grantBtn.disabled = false;
+            grantBtn.innerHTML = 'Разрешить';
+        }
+    }
+}
+
+// Показать ошибку при запросе разрешения
+function showPermissionError(message) {
+    const permissionModal = document.getElementById('permissionModal');
+    if (!permissionModal) return;
+    
+    const content = permissionModal.querySelector('.modal-content');
+    if (content) {
+        content.innerHTML = `
+            <div class="modal-icon" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(220, 53, 69, 0.1) 100%);">
+                <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+            </div>
+            <h2 class="modal-title">Ошибка</h2>
+            <p class="modal-text">
+                ${message}
+            </p>
+            <p class="modal-text-secondary">
+                Попробуйте снова или обратитесь в поддержку.
+            </p>
+        `;
+    }
+}
+
+// Запретить разрешение и закрыть мини-приложение
+function denyPermission() {
+    console.log('Пользователь запретил доступ');
+    
+    // Удаляем все флаги, чтобы при следующем запуске снова показать запрос
+    localStorage.removeItem('telegram_write_access_asked');
+    localStorage.removeItem('telegram_write_access');
+    localStorage.removeItem('telegram_write_access_denied');
+    
+    // Закрываем модальное окно
+    const permissionModal = document.getElementById('permissionModal');
+    if (permissionModal) {
+        permissionModal.classList.remove('active');
+    }
+    
+    // Небольшая задержка перед закрытием мини-приложения для плавности
+    setTimeout(() => {
+        // Закрываем мини-приложение
+        if (window.Telegram && window.Telegram.WebApp) {
+            const webApp = window.Telegram.WebApp;
+            try {
+                console.log('Закрытие мини-приложения...');
+                webApp.close();
+            } catch (error) {
+                console.error('Ошибка при закрытии мини-приложения:', error);
+                // Если не удалось закрыть программно, показываем сообщение
+                alert('Для корректной работы приложения требуется разрешение на отправку сообщений. Пожалуйста, перезапустите приложение.');
+            }
+        } else {
+            console.error('Telegram WebApp недоступен');
+        }
+    }, 300);
 }
 
 // Обновление UI модального окна после успешного получения разрешения
