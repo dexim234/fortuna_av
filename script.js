@@ -544,8 +544,13 @@ async function sendTelegramNotification(prizeName, protectionKey) {
             console.log('Доступные данные:', {
                 hasTelegram: !!window.Telegram,
                 hasWebApp: !!(window.Telegram && window.Telegram.WebApp),
+                webAppData: window.Telegram?.WebApp ? {
+                    initDataUnsafe: window.Telegram.WebApp.initDataUnsafe,
+                    initData: window.Telegram.WebApp.initData
+                } : null,
                 localStorage_user_id: localStorage.getItem('telegram_user_id')
             });
+            alert('⚠️ Не удалось получить ID пользователя. Уведомление не будет отправлено.');
             return;
         }
         
