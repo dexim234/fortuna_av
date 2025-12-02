@@ -532,7 +532,7 @@ async function sendTelegramNotification(prizeName, protectionKey) {
         }
         
         // URL сервера бота (замените на ваш реальный URL)
-        const botServerUrl = 'http://localhost:5000'; // Или ваш production URL
+        const botServerUrl = 'http://localhost:5001'; // Или ваш production URL
         
         const response = await fetch(`${botServerUrl}/send_notification`, {
             method: 'POST',
@@ -950,80 +950,55 @@ function requestWriteAccess() {
         return;
     }
     
-    try {
-        const requestPromise = webApp.requestWriteAccess();
+    // Используем правильный синтаксис для requestWriteAccess
+    webApp.requestWriteAccess().then((res) => {
+        console.log('Результат запроса разрешения:', res);
         
-        // Проверяем, является ли результат Promise
-        if (requestPromise && typeof requestPromise.then === 'function') {
-            requestPromise
-                .then((granted) => {
-                    console.log('Результат запроса разрешения:', granted);
-                    
-                    if (granted) {
-                        localStorage.setItem('telegram_write_access', 'granted');
-                        localStorage.setItem('telegram_write_access_asked', 'true');
-                        console.log('✅ Разрешение на отправку сообщений получено');
-                        
-                        // Проверяем статус разрешения
-                        if (webApp.canSendMessage) {
-                            console.log('✅ canSendMessage подтверждено');
-                        }
-                        
-                        // Обновляем UI модального окна с сообщением об успехе
-                        updatePermissionModalSuccess();
-                        
-                        // Закрываем модальное окно через 1.5 секунды
-                        setTimeout(() => {
-                            closePermissionModal();
-                        }, 1500);
-                    } else {
-                        localStorage.setItem('telegram_write_access', 'denied');
-                        localStorage.setItem('telegram_write_access_asked', 'true');
-                        console.log('❌ Разрешение на отправку сообщений отклонено');
-                        showPermissionError('Разрешение не было предоставлено');
-                        
-                        if (grantBtn) {
-                            grantBtn.disabled = false;
-                            grantBtn.innerHTML = 'Разрешить';
-                        }
-                        
-                        setTimeout(() => {
-                            closePermissionModal();
-                        }, 2000);
-                    }
-                })
-                .catch((error) => {
-                    console.error('❌ Ошибка при запросе разрешения:', error);
-                    showPermissionError('Ошибка при запросе разрешения: ' + error.message);
-                    
-                    if (grantBtn) {
-                        grantBtn.disabled = false;
-                        grantBtn.innerHTML = 'Разрешить';
-                    }
-                    
-                    setTimeout(() => {
-                        closePermissionModal();
-                    }, 2000);
-                });
-        } else {
-            // Если метод не возвращает Promise, обрабатываем синхронно
-            console.warn('requestWriteAccess не возвращает Promise, обрабатываем синхронно');
+        if (res) {
+            console.log("Write Access granted");
             localStorage.setItem('telegram_write_access', 'granted');
             localStorage.setItem('telegram_write_access_asked', 'true');
+            
+            // Проверяем статус разрешения
+            if (webApp.canSendMessage) {
+                console.log('✅ canSendMessage подтверждено');
+            }
+            
+            // Обновляем UI модального окна с сообщением об успехе
             updatePermissionModalSuccess();
+            
+            // Закрываем модальное окно через 1.5 секунды
             setTimeout(() => {
                 closePermissionModal();
             }, 1500);
+        } else {
+            console.log("Write Access denied");
+            localStorage.setItem('telegram_write_access', 'denied');
+            localStorage.setItem('telegram_write_access_asked', 'true');
+            showPermissionError('Разрешение не было предоставлено');
+            
+            if (grantBtn) {
+                grantBtn.disabled = false;
+                grantBtn.innerHTML = 'Разрешить';
+            }
+            
+            setTimeout(() => {
+                closePermissionModal();
+            }, 2000);
         }
-    } catch (error) {
-        console.error('❌ Ошибка при вызове requestWriteAccess:', error);
-        showPermissionError('Ошибка при вызове API: ' + error.message);
+    }).catch((error) => {
+        console.error('❌ Ошибка при запросе разрешения:', error);
+        showPermissionError('Ошибка при запросе разрешения: ' + (error.message || error));
         
         if (grantBtn) {
             grantBtn.disabled = false;
             grantBtn.innerHTML = 'Разрешить';
         }
-    }
+        
+        setTimeout(() => {
+            closePermissionModal();
+        }, 2000);
+    });
 }
 
 // Показать ошибку при запросе разрешения
