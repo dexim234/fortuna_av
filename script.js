@@ -868,7 +868,9 @@ function setupModal() {
     
 }
 
-// Тихий запрос разрешения без модального окна (только нативное уведомление Telegram)
+// Проверка разрешения на отправку сообщений (версия 6.0+)
+// В версии 6.0 метод requestWriteAccess() не поддерживается
+// Разрешение проверяется через canSendMessage
 function requestWriteAccessSilently() {
     // Проверяем, есть ли Telegram WebApp
     if (!window.Telegram || !window.Telegram.WebApp) {
@@ -877,60 +879,25 @@ function requestWriteAccessSilently() {
     
     const webApp = window.Telegram.WebApp;
     
-    // Проверяем, есть ли уже разрешение
+    // Проверяем версию WebApp SDK
+    const version = webApp.version || 'unknown';
+    console.log('Telegram WebApp версия:', version);
+    
+    // Проверяем, есть ли уже разрешение через canSendMessage
     if (webApp.canSendMessage) {
-        console.log('✅ Разрешение уже предоставлено (canSendMessage = true)');
+        console.log('✅ Разрешение на отправку сообщений уже есть (canSendMessage = true)');
         localStorage.setItem('telegram_write_access', 'granted');
         localStorage.setItem('telegram_write_access_asked', 'true');
         return;
     }
     
-    // Проверяем, уже было ли запрошено разрешение
-    const permissionAsked = localStorage.getItem('telegram_write_access_asked');
-    const accessStatus = localStorage.getItem('telegram_write_access');
-    
-    // Если разрешение уже было запрошено и разрешено, не запрашиваем снова
-    if (permissionAsked === 'true' && accessStatus === 'granted') {
-        return;
-    }
-    
-    // Если разрешение было запрещено, не запрашиваем снова
-    if (permissionAsked === 'true' && accessStatus === 'denied') {
-        return;
-    }
-    
-    // Запрашиваем разрешение через Telegram (без модального окна)
-    console.log('Запрос разрешения на отправку сообщений (только нативное уведомление Telegram)...');
-    
-    if (typeof webApp.requestWriteAccess === 'function') {
-        webApp.requestWriteAccess().then((res) => {
-            if (res || webApp.canSendMessage) {
-                console.log("✅ Write Access granted");
-                localStorage.setItem('telegram_write_access', 'granted');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-            } else {
-                console.log("❌ Write Access denied");
-                localStorage.setItem('telegram_write_access', 'denied');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-            }
-        }).catch((error) => {
-            console.error('Ошибка при запросе разрешения:', error);
-            // Проверяем canSendMessage даже при ошибке
-            if (webApp.canSendMessage) {
-                localStorage.setItem('telegram_write_access', 'granted');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-            } else {
-                localStorage.setItem('telegram_write_access', 'denied');
-                localStorage.setItem('telegram_write_access_asked', 'true');
-            }
-        });
-    }
+    // Если canSendMessage = false, разрешение не предоставлено
+    // В версии 6.0+ пользователь должен дать разрешение через настройки бота
+    console.log('ℹ️ Разрешение на отправку сообщений не предоставлено (canSendMessage = false)');
+    console.log('Пользователь может дать разрешение через настройки бота');
+    localStorage.setItem('telegram_write_access', 'denied');
+    localStorage.setItem('telegram_write_access_asked', 'true');
 }
-
-// Перерисовка при изменении размера окна
-window.addEventListener('resize', () => {
-    drawWheel();
-});
 
 // Перерисовка при изменении размера окна
 window.addEventListener('resize', () => {
