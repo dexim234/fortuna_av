@@ -507,13 +507,25 @@ function showResult(prize, protectionKey) {
 // Отправка уведомления в Telegram
 async function sendTelegramNotification(prizeName, protectionKey) {
     try {
+        console.log('🔔 Начало отправки уведомления:', { prizeName, protectionKey });
+        
         // Получаем user_id из Telegram WebApp (если доступно)
         let userId = null;
         
         if (window.Telegram && window.Telegram.WebApp) {
             const webApp = window.Telegram.WebApp;
+            console.log('Telegram WebApp доступен:', {
+                initDataUnsafe: !!webApp.initDataUnsafe,
+                user: !!webApp.initDataUnsafe?.user,
+                canSendMessage: webApp.canSendMessage
+            });
+            
             if (webApp.initDataUnsafe && webApp.initDataUnsafe.user) {
                 userId = webApp.initDataUnsafe.user.id;
+                console.log('✅ User ID получен из Telegram WebApp:', userId);
+                
+                // Сохраняем user_id в localStorage для будущих запросов
+                localStorage.setItem('telegram_user_id', userId.toString());
             }
         }
         
@@ -522,17 +534,30 @@ async function sendTelegramNotification(prizeName, protectionKey) {
             const savedUserId = localStorage.getItem('telegram_user_id');
             if (savedUserId) {
                 userId = parseInt(savedUserId);
+                console.log('✅ User ID получен из localStorage:', userId);
             }
         }
         
         // Если user_id все еще не найден, не отправляем уведомление
         if (!userId) {
-            console.log('Telegram user_id не найден, уведомление не отправлено');
+            console.error('❌ Telegram user_id не найден, уведомление не отправлено');
+            console.log('Доступные данные:', {
+                hasTelegram: !!window.Telegram,
+                hasWebApp: !!(window.Telegram && window.Telegram.WebApp),
+                localStorage_user_id: localStorage.getItem('telegram_user_id')
+            });
             return;
         }
         
-        // URL сервера бота (замените на ваш реальный URL)
-        const botServerUrl = 'http://localhost:5001'; // Или ваш production URL
+        // URL сервера бота
+        const botServerUrl = 'http://localhost:5001';
+        
+        console.log('📤 Отправка запроса на сервер:', {
+            url: `${botServerUrl}/send_notification`,
+            user_id: userId,
+            prize_name: prizeName,
+            protection_key: protectionKey
+        });
         
         const response = await fetch(`${botServerUrl}/send_notification`, {
             method: 'POST',
@@ -546,15 +571,25 @@ async function sendTelegramNotification(prizeName, protectionKey) {
             })
         });
         
+        const responseText = await response.text();
+        console.log('📥 Ответ от сервера:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: responseText
+        });
+        
         if (response.ok) {
-            console.log('Уведомление успешно отправлено в Telegram');
+            console.log('✅ Уведомление успешно отправлено в Telegram');
         } else {
-            console.error('Ошибка при отправке уведомления:', await response.text());
+            console.error('❌ Ошибка при отправке уведомления:', responseText);
         }
         
     } catch (error) {
-        console.error('Ошибка при отправке уведомления в Telegram:', error);
-        // Не показываем ошибку пользователю, просто логируем
+        console.error('❌ Ошибка при отправке уведомления в Telegram:', error);
+        console.error('Детали ошибки:', {
+            message: error.message,
+            stack: error.stack
+        });
     }
 }
 
