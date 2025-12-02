@@ -1023,6 +1023,49 @@ body {
     letter-spacing: 0.3px;
 }
 
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.modal-btn {
+    font-family: 'Rajdhani', 'Orbitron', sans-serif;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    min-width: 140px;
+}
+
+.modal-btn-primary {
+    background: #4E6E49;
+    color: #FFFFFF;
+}
+
+.modal-btn-primary:hover {
+    background: #5a7f54;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(78, 110, 73, 0.4);
+}
+
+.modal-btn-secondary {
+    background: transparent;
+    color: #4E6E49;
+    border: 2px solid #4E6E49;
+}
+
+.modal-btn-secondary:hover {
+    background: rgba(78, 110, 73, 0.1);
+    transform: translateY(-2px);
+}
+
 /* Modal Responsive */
 @media (max-width: 768px) {
     .modal-container {
@@ -1057,6 +1100,18 @@ body {
     .modal-container {
         padding: 1.75rem 1.25rem;
         border-radius: 16px;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .modal-btn {
+        width: 100%;
+        min-width: auto;
+        padding: 12px 24px;
+        font-size: 1rem;
     }
 
     .modal-close {

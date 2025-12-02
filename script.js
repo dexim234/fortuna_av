@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('telegram_user_id', webApp.initDataUnsafe.user.id.toString());
             console.log('Telegram user_id сохранен:', webApp.initDataUnsafe.user.id);
         }
+        
+            // Проверяем, нужно ли показать запрос разрешения
+        setTimeout(() => {
+            checkAndRequestPermission();
+        }, 500);
     }
     
     init();
@@ -825,6 +830,147 @@ function setupModal() {
             hideNoAttemptsModal();
         }
     });
+    
+    // Настройка модального окна запроса разрешения
+    setupPermissionModal();
+}
+
+// Настройка модального окна запроса разрешения
+function setupPermissionModal() {
+    const permissionModal = document.getElementById('permissionModal');
+    const grantBtn = document.getElementById('grantPermissionBtn');
+    const skipBtn = document.getElementById('skipPermissionBtn');
+    
+    if (!permissionModal || !grantBtn || !skipBtn) return;
+    
+    // Обработка кнопки "Разрешить"
+    grantBtn.addEventListener('click', () => {
+        requestWriteAccess();
+    });
+    
+    // Обработка кнопки "Позже"
+    skipBtn.addEventListener('click', () => {
+        closePermissionModal();
+    });
+    
+    // Предотвращаем закрытие по клику на overlay
+    // Пользователь должен сделать выбор (разрешить или пропустить)
+    permissionModal.addEventListener('click', (e) => {
+        if (e.target === permissionModal) {
+            // Не закрываем модальное окно при клике на overlay
+            // Пользователь должен нажать на одну из кнопок
+            e.stopPropagation();
+        }
+    });
+    
+    // Разрешаем закрытие по Escape для удобства пользователя
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && permissionModal.classList.contains('active')) {
+            closePermissionModal();
+        }
+    });
+}
+
+// Проверка и показ запроса разрешения
+function checkAndRequestPermission() {
+    // Проверяем, есть ли Telegram WebApp
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        return;
+    }
+    
+    const webApp = window.Telegram.WebApp;
+    
+    // Проверяем, уже было ли запрошено разрешение
+    const permissionAsked = localStorage.getItem('telegram_write_access_asked');
+    
+    // Проверяем, есть ли уже разрешение
+    if (webApp.canSendMessage) {
+        localStorage.setItem('telegram_write_access', 'granted');
+        return;
+    }
+    
+    // Если разрешение уже было запрошено, не показываем модальное окно снова
+    if (permissionAsked === 'true') {
+        return;
+    }
+    
+    // Показываем модальное окно запроса разрешения
+    showPermissionModal();
+}
+
+// Показать модальное окно запроса разрешения
+function showPermissionModal() {
+    const permissionModal = document.getElementById('permissionModal');
+    if (permissionModal) {
+        permissionModal.classList.add('active');
+    }
+}
+
+// Закрыть модальное окно запроса разрешения
+function closePermissionModal() {
+    const permissionModal = document.getElementById('permissionModal');
+    if (permissionModal) {
+        permissionModal.classList.remove('active');
+        localStorage.setItem('telegram_write_access_asked', 'true');
+    }
+}
+
+// Запрос разрешения на отправку сообщений
+function requestWriteAccess() {
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        console.error('Telegram WebApp не доступен');
+        closePermissionModal();
+        return;
+    }
+    
+    const webApp = window.Telegram.WebApp;
+    
+    // Запрашиваем разрешение
+    webApp.requestWriteAccess()
+        .then((granted) => {
+            if (granted) {
+                localStorage.setItem('telegram_write_access', 'granted');
+                localStorage.setItem('telegram_write_access_asked', 'true');
+                console.log('Разрешение на отправку сообщений получено');
+                
+                // Обновляем UI модального окна с сообщением об успехе
+                updatePermissionModalSuccess();
+                
+                // Закрываем модальное окно через 1.5 секунды
+                setTimeout(() => {
+                    closePermissionModal();
+                }, 1500);
+            } else {
+                localStorage.setItem('telegram_write_access', 'denied');
+                localStorage.setItem('telegram_write_access_asked', 'true');
+                console.log('Разрешение на отправку сообщений отклонено');
+                closePermissionModal();
+            }
+        })
+        .catch((error) => {
+            console.error('Ошибка при запросе разрешения:', error);
+            localStorage.setItem('telegram_write_access_asked', 'true');
+            closePermissionModal();
+        });
+}
+
+// Обновление UI модального окна после успешного получения разрешения
+function updatePermissionModalSuccess() {
+    const permissionModal = document.getElementById('permissionModal');
+    if (!permissionModal) return;
+    
+    const content = permissionModal.querySelector('.modal-content');
+    if (content) {
+        content.innerHTML = `
+            <div class="modal-icon" style="background: linear-gradient(135deg, rgba(78, 110, 73, 0.3) 0%, rgba(78, 110, 73, 0.2) 100%);">
+                <i class="fas fa-check" style="color: #4E6E49;"></i>
+            </div>
+            <h2 class="modal-title">Разрешение получено!</h2>
+            <p class="modal-text">
+                Теперь бот сможет отправлять вам уведомления о выигрышах.
+            </p>
+        `;
+    }
 }
 
 // Перерисовка при изменении размера окна
