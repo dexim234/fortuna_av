@@ -554,8 +554,27 @@ async function sendTelegramNotification(prizeName, protectionKey) {
             return;
         }
         
-        // URL сервера бота
-        const botServerUrl = 'http://localhost:5001';
+        // URL сервера бота - автоматически определяется в зависимости от окружения
+        // Для localhost используем localhost:5001, для production - ваш сервер
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' ||
+                           window.location.hostname === '';
+        
+        // Определяем URL сервера в зависимости от окружения
+        let botServerUrl;
+        if (isLocalhost) {
+            botServerUrl = 'http://localhost:5001';
+        } else {
+            // Для production используем ваш сервер на Amvera
+            botServerUrl = 'https://apevault-fortunax-dexim.amvera.io';
+        }
+        
+        console.log('🌐 Окружение:', {
+            hostname: window.location.hostname,
+            origin: window.location.origin,
+            isLocalhost: isLocalhost,
+            botServerUrl: botServerUrl
+        });
         
         console.log('📤 Отправка запроса на сервер:', {
             url: `${botServerUrl}/send_notification`,
